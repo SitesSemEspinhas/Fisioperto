@@ -1,0 +1,31 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Next.js
+/.next/
+/out/
+next-env.d.ts
+
+# Production
+/build
+
+# Ambiente — NUNCA commitar segredos
+.env
+.env.local
+.env*.local
+
+# Vercel
+.vercel
+
+# Logs e SO
+*.log
+.DS_Store
+
+# TypeScript
+*.tsbuildinfo
+
+# Supabase CLI (local)
+/supabase/.branches
+/supabase/.temp
