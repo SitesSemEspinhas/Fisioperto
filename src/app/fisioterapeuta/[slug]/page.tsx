@@ -7,12 +7,15 @@ import { PhysioAvatar } from "@/components/physio-avatar";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ContactForm } from "@/components/contact-form";
 import { ProfileViewTracker } from "@/components/profile-view-tracker";
+import { FavoriteButton } from "@/components/favorite-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   getPhysiotherapistBySlug,
   getAllPublishedSlugs,
+  isFavorited,
 } from "@/lib/data";
+import { getSessionUser } from "@/lib/auth";
 import { getSpecialty } from "@/lib/reference";
 import { siteConfig } from "@/lib/config";
 
@@ -65,6 +68,9 @@ export default async function PhysioProfilePage({
   const { slug } = await params;
   const physio = await getPhysiotherapistBySlug(slug);
   if (!physio) notFound();
+
+  const user = await getSessionUser();
+  const favorited = user ? await isFavorited(user.id, physio.id) : false;
 
   const areas = physio.concelhos.map((c) => c.name);
 
@@ -138,6 +144,14 @@ export default async function PhysioProfilePage({
                   {areas.join(" · ")}
                 </p>
               )}
+              <div className="mt-4">
+                <FavoriteButton
+                  physiotherapistId={physio.id}
+                  initialFavorited={favorited}
+                  isAuthenticated={Boolean(user)}
+                  redirectTo={`/fisioterapeuta/${physio.slug}`}
+                />
+              </div>
             </div>
           </div>
 

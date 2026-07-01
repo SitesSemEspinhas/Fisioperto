@@ -33,14 +33,29 @@ Diretório digital nacional de **fisioterapia domiciliária** em Portugal. Liga 
 
 3. **Base de dados (Supabase)**
    - Criar projeto em [supabase.com](https://supabase.com).
-   - No **SQL Editor**, correr `supabase/schema.sql` e depois `supabase/seed.sql`.
-   - (Em alternativa, com a CLI: `supabase db push`.)
+   - No **SQL Editor**, correr por esta ordem: `supabase/schema.sql`, `supabase/seed.sql`,
+     `supabase/seed-demo.sql` (14 perfis de demonstração) e `supabase/storage.sql` (bucket de fotos).
+   - **Em alternativa** (mais rápido), com o `DATABASE_URL` no `.env`:
+     ```bash
+     node --env-file=.env scripts/db-apply.mjs   # schema + seed + seed-demo
+     node --env-file=.env scripts/db-verify.mjs  # confirma contagens e leitura pública
+     ```
 
 4. **Arrancar**
    ```bash
    npm run dev
    ```
-   Abre em `http://localhost:3000`.
+   Abre em `http://localhost:3888`.
+
+---
+
+## Demonstração
+
+- **Guião passo-a-passo:** [`docs/GUIAO-DEMO.md`](./docs/GUIAO-DEMO.md).
+- **Logins e acessos** (credenciais de demo, chaves, admin): `acessos.md` (na raiz, fora do Git).
+- **Login rápido de fisioterapeuta:** `ana.marques@demo.fisioperto.pt` · password `FisioDemo!2025`.
+- Os 14 perfis de demonstração são **fictícios** (nomes/cédulas inventados, avatares de iniciais).
+  Remover antes de produção: `delete from auth.users where email like '%@demo.fisioperto.pt';`
 
 ---
 

@@ -260,3 +260,82 @@ export async function getContactRequestsFor(
     .order("created_at", { ascending: false });
   return (data ?? []) as ContactRequest[];
 }
+
+/** Indica se o utilizador já marcou este fisioterapeuta como favorito. */
+export async function isFavorited(
+  userId: string,
+  physiotherapistId: string,
+): Promise<boolean> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("favorites")
+    .select("physiotherapist_id")
+    .eq("user_id", userId)
+    .eq("physiotherapist_id", physiotherapistId)
+    .maybeSingle();
+  return Boolean(data);
+}
+
+/** Fisioterapeutas favoritos do paciente (cartões completos). */
+export async function getFavoritePhysios(userId: string): Promise<PhysioCard[]> {
+  const supabase = await createClient();
+  const { data: favs } = await supabase
+    .from("favorites")
+    .select("physiotherapist_id")
+    .eq("user_id", userId);
+  const ids = (favs ?? []).map((f) => f.physiotherapist_id);
+  if (ids.length === 0) return [];
+
+  const { specs, concs } = await loadReferenceMaps(supabase);
+  const specById = new Map(specs.map((s) => [s.id, s]));
+  const concById = new Map(concs.map((c) => [c.id, c]));
+
+  const { data: physios } = await supabase
+    .from("physiotherapists")
+    .select("*")
+    .in("id", ids)
+    .order("display_name");
+  const list = (physios ?? []) as Physiotherapist[];
+  if (list.length === 0) return [];
+
+  const [{ data: sLinks }, { data: cLinks }] = await Promise.all([
+    supabase
+      .from("physiotherapist_specialties")
+      .select("physiotherapist_id, specialty_id")
+      .in("physiotherapist_id", ids),
+    supabase
+      .from("physiotherapist_concelhos")
+      .select("physiotherapist_id, concelho_id")
+      .in("physiotherapist_id", ids),
+  ]);
+  return stitchTags(list, sLinks ?? [], cLinks ?? [], specById, concById);
+}
+
+/** Histórico de pedidos de contacto enviados pelo paciente autenticado. */
+export async function getContactRequestsByPatient(
+  userId: string,
+): Promise<(ContactRequest & { physio_name: string | null; physio_slug: string | null })[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("contact_requests")
+    .select("*")
+    .eq("patient_user_id", userId)
+    .order("created_at", { ascending: false });
+  const requests = (data ?? []) as ContactRequest[];
+  if (requests.length === 0) return [];
+
+  const physioIds = [...new Set(requests.map((r) => r.physiotherapist_id))];
+  const { data: physios } = await supabase
+    .from("physiotherapists")
+    .select("id, display_name, slug")
+    .in("id", physioIds);
+  const byId = new Map(
+    (physios ?? []).map((p) => [p.id, { name: p.display_name, slug: p.slug }]),
+  );
+
+  return requests.map((r) => ({
+    ...r,
+    physio_name: byId.get(r.physiotherapist_id)?.name ?? null,
+    physio_slug: byId.get(r.physiotherapist_id)?.slug ?? null,
+  }));
+}
