@@ -5,7 +5,7 @@ import { ChevronRight, MapPin, Stethoscope } from "lucide-react";
 
 import { PhysioCard } from "@/components/physio-card";
 import { Badge } from "@/components/ui/badge";
-import { listPhysiotherapists, getActiveSpecialtyConcelhoCombos } from "@/lib/data";
+import { listPhysiotherapists } from "@/lib/data";
 import {
   getSpecialty,
   getConcelho,
@@ -14,15 +14,8 @@ import {
 } from "@/lib/reference";
 import { siteConfig } from "@/lib/config";
 
-export const dynamicParams = true;
-
-export async function generateStaticParams() {
-  try {
-    return await getActiveSpecialtyConcelhoCombos();
-  } catch {
-    return [];
-  }
-}
+// Renderizada no servidor a pedido (SSR) — ver nota em /fisioterapeuta/[slug].
+export const dynamic = "force-dynamic";
 
 type Params = Promise<{ especialidade: string; concelho: string }>;
 

@@ -10,25 +10,15 @@ import { ProfileViewTracker } from "@/components/profile-view-tracker";
 import { FavoriteButton } from "@/components/favorite-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  getPhysiotherapistBySlug,
-  getAllPublishedSlugs,
-  isFavorited,
-} from "@/lib/data";
+import { getPhysiotherapistBySlug, isFavorited } from "@/lib/data";
 import { getSessionUser } from "@/lib/auth";
 import { getSpecialty } from "@/lib/reference";
 import { siteConfig } from "@/lib/config";
 
-export const dynamicParams = true;
-
-export async function generateStaticParams() {
-  try {
-    const slugs = await getAllPublishedSlugs();
-    return slugs.map((slug) => ({ slug }));
-  } catch {
-    return [];
-  }
-}
+// O cabeçalho autenticado (cookies) torna todas as páginas dinâmicas; por isso
+// os perfis são renderizados no servidor a pedido (SSR). Evita o conflito
+// "static + uso dinâmico" que dava 500 em produção. SSR é indexável (SEO ok).
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

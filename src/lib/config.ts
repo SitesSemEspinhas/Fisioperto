@@ -2,9 +2,26 @@
  * Configuração do site, lida de variáveis de ambiente.
  * Centraliza nome/URL para facilitar o rebranding (ver CLAUDE.md §6).
  */
+/**
+ * Normaliza o URL do site para uma forma absoluta e válida.
+ * Aceita valores sem protocolo (ex.: "fisioperto.vercel.app" → "https://...")
+ * e nunca deixa `new URL(...)` rebentar (metadataBase).
+ */
+function normalizeSiteUrl(raw: string | undefined): string {
+  const fallback = "http://localhost:3000";
+  const value = (raw ?? "").trim();
+  if (!value) return fallback;
+  const withProtocol = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  try {
+    return new URL(withProtocol).toString().replace(/\/$/, "");
+  } catch {
+    return fallback;
+  }
+}
+
 export const siteConfig = {
   name: process.env.NEXT_PUBLIC_SITE_NAME ?? "FisioPerto",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  url: normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL),
   description:
     "Encontre fisioterapeutas verificados pela Ordem dos Fisioterapeutas para fisioterapia ao domicílio em Portugal. Pesquise por especialidade clínica e concelho.",
   tagline: "Fisioterapia ao domicílio, com confiança.",
