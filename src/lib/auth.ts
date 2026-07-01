@@ -32,6 +32,17 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
     return { id: user.id, email: user.email ?? null, profile: profile ?? null };
   } catch (error) {
+    // Deixar o Next tratar do controlo de renderização dinâmica (uso de cookies).
+    if (
+      error &&
+      typeof error === "object" &&
+      "digest" in error &&
+      String((error as { digest?: unknown }).digest).startsWith(
+        "DYNAMIC_SERVER_USAGE",
+      )
+    ) {
+      throw error;
+    }
     console.error("[auth] Falha ao ler a sessão:", error);
     return null;
   }

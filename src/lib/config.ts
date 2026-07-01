@@ -10,10 +10,21 @@ export const siteConfig = {
   tagline: "Fisioterapia ao domicílio, com confiança.",
 } as const;
 
+/**
+ * Chave pública do Supabase (anon). Aceita o nome antigo (ANON_KEY) e o
+ * novo esquema de chaves do Supabase (PUBLISHABLE_KEY, sb_publishable_...).
+ */
+export function supabaseAnonKey(): string | undefined {
+  return (
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  );
+}
+
 /** Indica se as variáveis do Supabase estão configuradas com valores reais (não placeholders). */
 export function isSupabaseConfigured(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const key = supabaseAnonKey();
   return Boolean(
     url &&
       key &&
